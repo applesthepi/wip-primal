@@ -1,6 +1,6 @@
 [package]
-name = "wip-primal"
+name = "wip_primal"
 version = "0.1.0"
-edition = "2021"
 
 [dependencies]
+wip_pm.workspace = true
