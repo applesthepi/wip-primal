@@ -1,8 +1,28 @@
+/// # ABS/REL/OFF
+/// 
+/// ABS - Absolute world position
+/// REL - Relative to higher abstraction
+/// 	(TilePositionRel is releative to its owner ChunkPositionAbs)
+/// 	(SectorPositionRel doesn't exist because it can't be relative to anything)
+/// OFF - Offset from the same abstraction
+/// 
+/// # Function Referance
+/// 
+/// ABS -> ABS | `TilePositionAbs::into_chunk() -> ChunkPositionAbs;` / `TilePositionAbs::as_chunk() -> ChunkPositionAbs;`
+/// ABS -> ABS | `TilePositionAbs::from_chunk(&ChunkPositionAbs, {integer}, {integer}) -> TilePositionAbs;`
+/// ABS -> REL | `ChunkPositionAbs::rel_from_abs(&TilePositionAbs) -> ChunkPositionRel;`
+/// REL -> ABS | `TilePositionRel::into_abs(&ChunkPositionAbs) -> TilePositionAbs`
+
 use wip_pm::WorldPosition;
 
-use crate::CHUNK_WIDTH;
+use crate::{CHUNK_WIDTH, SECTOR_WIDTH};
 
-#[derive(WorldPosition, Debug, Default, Clone, Copy)]
+// TODO: redo PM to generate these sub methods.
+// TODO: not all methods are impl for each position type.
+// TODO: create OFF types for each position type.
+// TODO: incorperate OFF types into referance.
+
+#[derive(WorldPosition, Debug, Default, Clone, Copy, Ord, Eq, PartialEq, PartialOrd)]
 pub struct TilePositionAbs {
 	pub x: i64,
 	pub y: i64,
@@ -22,7 +42,7 @@ impl TilePositionAbs {
 		Self { x: v, y: v, }
 	}
 
-	pub fn into_chunk_abs(
+	pub fn into_chunk(
 		self,
 	) -> ChunkPositionAbs {
 		ChunkPositionAbs::new(
@@ -32,7 +52,7 @@ impl TilePositionAbs {
 	}
 }
 
-#[derive(WorldPosition, Debug, Default, Clone, Copy)]
+#[derive(WorldPosition, Debug, Default, Clone, Copy, Ord, Eq, PartialEq, PartialOrd)]
 pub struct TilePositionRel {
 	pub x: u8,
 	pub y: u8,
@@ -44,6 +64,12 @@ impl TilePositionRel {
 		y: u8,
 	) -> Self {
 		Self { x, y }
+	}
+
+	pub fn splat(
+		v: u8,
+	) -> Self {
+		Self { x: v, y: v, }
 	}
 
 	/// Takes a tile relative to a src chunk and converts
@@ -64,7 +90,7 @@ impl TilePositionRel {
 	}
 }
 
-#[derive(WorldPosition, Debug, Default, Clone, Copy)]
+#[derive(WorldPosition, Debug, Default, Clone, Copy, Ord, Eq, PartialEq, PartialOrd)]
 pub struct ChunkPositionAbs {
 	pub x: i64,
 	pub y: i64,
@@ -79,15 +105,81 @@ impl ChunkPositionAbs {
 	) -> Self {
 		Self { x, y }
 	}
+
+	pub fn splat(
+		v: i64,
+	) -> Self {
+		Self { x: v, y: v, }
+	}
+
+	pub fn from_sector(
+		sector_position_abs: &SectorPositionAbs,
+		x: i64,
+		y: i64,
+	) -> Self {
+		Self {
+			x: sector_position_abs.x * SECTOR_WIDTH as i64 + x,
+			y: sector_position_abs.y * SECTOR_WIDTH as i64 + y,
+		}
+	}
+
+	pub fn into_sector(
+		self,
+	) -> SectorPositionAbs {
+		SectorPositionAbs::new(
+			(self.x as f64 / SECTOR_WIDTH as f64).floor() as i64,
+			(self.y as f64 / SECTOR_WIDTH as f64).floor() as i64,
+		)
+	}
+
+	pub fn as_sector(
+		&self,
+	) -> SectorPositionAbs {
+		SectorPositionAbs::new(
+			(self.x as f64 / SECTOR_WIDTH as f64).floor() as i64,
+			(self.y as f64 / SECTOR_WIDTH as f64).floor() as i64,
+		)
+	}
 }
 
-#[derive(WorldPosition, Debug, Default, Clone, Copy)]
+#[derive(WorldPosition, Debug, Default, Clone, Copy, Ord, Eq, PartialEq, PartialOrd)]
 pub struct ChunkPositionRel {
+	pub x: u16,
+	pub y: u16,
+}
+
+impl ChunkPositionRel {
+	pub fn new(
+		x: u16,
+		y: u16,
+	) -> Self {
+		Self { x, y }
+	}
+
+	pub fn splat(
+		v: u16,
+	) -> Self {
+		Self { x: v, y: v, }
+	}
+
+	pub fn into_abs(
+		self,
+		sector_position_abs: &SectorPositionAbs,
+	) -> ChunkPositionAbs {
+		ChunkPositionAbs::new(
+			(sector_position_abs.x * SECTOR_WIDTH as i64) + self.x as i64,
+			(sector_position_abs.y * SECTOR_WIDTH as i64) + self.y as i64,
+		)
+	}
+}
+
+#[derive(WorldPosition, Debug, Default, Clone, Copy, Ord, Eq, PartialEq, PartialOrd)]
+pub struct SectorPositionAbs {
 	pub x: i64,
 	pub y: i64,
 }
 
-impl ChunkPositionRel {
+impl SectorPositionAbs {
 	pub fn new(
 		x: i64,
 		y: i64,
@@ -95,20 +187,62 @@ impl ChunkPositionRel {
 		Self { x, y }
 	}
 
-	/// Takes a chunk relative to another chunk and converts
-	/// 	it to an absolute chunk position in the world.
-	/// 
-	/// # Arguments
-	/// 
-	/// * `chunk_position_abs` - chunk absolute position
-	/// 	that this chunk is relative to.
-	pub fn into_abs(
-		self,
-		chunk_position_abs: ChunkPositionAbs,
-	) -> ChunkPositionAbs {
-		ChunkPositionAbs::new(
-			chunk_position_abs.x + self.x,
-			chunk_position_abs.y + self.y,
+	pub fn splat(
+		v: i64,
+	) -> Self {
+		Self { x: v, y: v, }
+	}
+
+	pub fn rel_from_abs(
+		&self,
+		chunk_position_abs: &ChunkPositionAbs,
+	) -> ChunkPositionRel {
+		let partial_chunk_position_abs = ChunkPositionAbs::from_sector(&self, 0, 0);
+		debug_assert!(*chunk_position_abs <= partial_chunk_position_abs); // TODO: PM somehow allow referance cmp?
+		let diff = partial_chunk_position_abs - *chunk_position_abs;
+		debug_assert!(diff.x < SECTOR_WIDTH as i64 && diff.y < SECTOR_WIDTH as i64);
+		ChunkPositionRel::new(
+			diff.x as u16,
+			diff.y as u16,
 		)
+	}
+
+	pub fn attempt_rel_from_abs(
+		&self,
+		chunk_position_abs: &ChunkPositionAbs,
+	) -> Option<ChunkPositionRel> {
+		let partial_chunk_position_abs = ChunkPositionAbs::from_sector(
+			&self,
+			0,
+			0,
+		);
+		if *chunk_position_abs > partial_chunk_position_abs { return None; }
+		let diff = partial_chunk_position_abs - *chunk_position_abs;
+		if diff.x >= SECTOR_WIDTH as i64 || diff.y >= SECTOR_WIDTH as i64 { return None; }
+		Some(ChunkPositionRel::new(
+			diff.x as u16,
+			diff.y as u16,
+		))
+	}
+}
+
+#[derive(WorldPosition, Debug, Default, Clone, Copy, Ord, Eq, PartialEq, PartialOrd)]
+pub struct SectorPositionOff {
+	pub x: i64,
+	pub y: i64,
+}
+
+impl SectorPositionOff {
+	pub fn new(
+		x: i64,
+		y: i64,
+	) -> Self {
+		Self { x, y }
+	}
+
+	pub fn splat(
+		v: i64,
+	) -> Self {
+		Self { x: v, y: v, }
 	}
 }
