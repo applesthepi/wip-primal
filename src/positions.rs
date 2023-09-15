@@ -42,6 +42,25 @@ impl TilePositionAbs {
 		Self { x: v, y: v, }
 	}
 
+	pub fn from_chunk_abs(
+		chunk_position_abs: &ChunkPositionAbs,
+		tile_position_rel: &TilePositionRel,
+	) -> Self {
+		Self {
+			x: chunk_position_abs.x * CHUNK_WIDTH as i64 + tile_position_rel.x as i64,
+			y: chunk_position_abs.y * CHUNK_WIDTH as i64 + tile_position_rel.y as i64,
+		}
+	}
+
+	pub fn from_chunk_abs_lossy(
+		chunk_position_abs: &ChunkPositionAbs,
+	) -> Self {
+		Self {
+			x: chunk_position_abs.x * CHUNK_WIDTH as i64,
+			y: chunk_position_abs.y * CHUNK_WIDTH as i64,
+		}
+	}
+
 	pub fn into_chunk(
 		self,
 	) -> ChunkPositionAbs {
