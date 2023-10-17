@@ -22,6 +22,27 @@ use crate::{CHUNK_WIDTH, SECTOR_WIDTH};
 // TODO: create OFF types for each position type.
 // TODO: incorperate OFF types into referance.
 
+#[derive(WorldPosition, Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
+pub struct EntityPositionAbs {
+	pub x: f64,
+	pub y: f64,
+}
+
+impl EntityPositionAbs {
+	pub fn new(
+		x: f64,
+		y: f64,
+	) -> Self {
+		Self { x, y }
+	}
+
+	pub fn splat(
+		v: f64,
+	) -> Self {
+		Self { x: v, y: v, }
+	}
+}
+
 #[derive(WorldPosition, Debug, Default, Clone, Copy, Ord, Eq, PartialEq, PartialOrd)]
 pub struct TilePositionAbs {
 	pub x: i64,
