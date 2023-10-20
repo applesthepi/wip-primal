@@ -41,9 +41,18 @@ impl EntityPositionAbs {
 	) -> Self {
 		Self { x: v, y: v, }
 	}
+
+	pub fn into_chunk(
+		self,
+	) -> ChunkPositionAbs {
+		ChunkPositionAbs::new(
+			(self.x / CHUNK_WIDTH as f64).floor() as i64,
+			(self.y / CHUNK_WIDTH as f64).floor() as i64,
+		)
+	}
 }
 
-#[derive(WorldPosition, Debug, Default, Clone, Copy, Ord, Eq, PartialEq, PartialOrd)]
+#[derive(WorldPosition, Debug, Default, Clone, Copy, Ord, Eq, PartialEq, PartialOrd, Hash)]
 pub struct TilePositionAbs {
 	pub x: i64,
 	pub y: i64,
@@ -88,6 +97,15 @@ impl TilePositionAbs {
 		ChunkPositionAbs::new(
 			(self.x as f64 / CHUNK_WIDTH as f64).floor() as i64,
 			(self.y as f64 / CHUNK_WIDTH as f64).floor() as i64,
+		)
+	}
+	
+	pub fn into_entity(
+		self,
+	) -> EntityPositionAbs {
+		EntityPositionAbs::new(
+			self.x as f64,
+			self.y as f64,
 		)
 	}
 }
