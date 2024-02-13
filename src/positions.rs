@@ -59,6 +59,11 @@ pub struct TilePositionAbs {
 }
 
 impl TilePositionAbs {
+	pub const ZERO: Self = Self {
+		x: 0,
+		y: 0,
+	};
+
 	pub fn new(
 		x: i64,
 		y: i64,
