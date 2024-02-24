@@ -1,5 +1,6 @@
 mod positions;
 mod bounds;
+pub mod algorithms;
 
 pub use positions::*;
 pub use bounds::*;
