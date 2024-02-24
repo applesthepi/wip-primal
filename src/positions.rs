@@ -113,6 +113,22 @@ impl TilePositionAbs {
 			self.y as f64,
 		)
 	}
+
+	pub fn sub_min(
+		self,
+		rhs: TilePositionAbs,
+	) -> TilePositionAbs { TilePositionAbs::new(
+		self.x.min(rhs.x),
+		self.y.min(rhs.y),
+	)}
+
+	pub fn sub_max(
+		self,
+		rhs: TilePositionAbs,
+	) -> TilePositionAbs { TilePositionAbs::new(
+		self.x.max(rhs.x),
+		self.y.max(rhs.y),
+	)}
 }
 
 #[derive(WorldPosition, Debug, Default, Clone, Copy, Ord, Eq, PartialEq, PartialOrd)]
