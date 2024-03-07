@@ -6,7 +6,7 @@ pub use positions::*;
 pub use bounds::*;
 
 pub const LOD_SAMPLE_WIDTH: u8 = 3;
-pub const CHUNK_SIZE_FACTOR: u32 = 3;
+pub const CHUNK_SIZE_FACTOR: u32 = 2;
 
 pub const CHUNK_WIDTH: u8 = LOD_SAMPLE_WIDTH.pow(CHUNK_SIZE_FACTOR);
 pub const CHUNK_WIDTH_SQ: usize = CHUNK_WIDTH as usize * CHUNK_WIDTH as usize;
