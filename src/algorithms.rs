@@ -24,3 +24,14 @@ pub fn spiral<F: FnMut(&TilePositionAbs) -> bool>(
 		}
 	}
 }
+
+pub fn inside_circle(
+	tile_position_abs: TilePositionAbs,
+	center: TilePositionAbs,
+	radius: i64,
+) -> bool {
+	let dx = center.x - tile_position_abs.x;
+	let dy = center.y - tile_position_abs.y;
+	let distance_squared = dx.pow(2) + dy.pow(2);
+	4 * distance_squared <= (radius * 2 + 1).pow(2)
+}
