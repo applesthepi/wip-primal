@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 wip_pm.workspace = true
+bevy.workspace = true
